@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Font Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            padding: 2rem;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            margin-bottom: 0.5rem;
+            color: #000;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        .controls {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .label-text {
+            color: #333;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            margin-bottom: 0.25rem;
+        }
+
+        .range-value {
+            color: #007bff;
+            font-size: 14px;
+            font-variant-numeric: tabular-nums;
+            font-weight: 600;
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        .demo-box {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .demo-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .text-sample {
+            font-size: 48px;
+            line-height: 1.4;
+            word-wrap: break-word;
+            transition: font-variation-settings 0.2s ease;
+        }
+
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .comparison-item {
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .comparison-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        @font-face {
+            font-family: 'Original';
+            src: url('input-variable.ttf') format('truetype');
+        }
+
+        @font-face {
+            font-family: 'Debug';
+            src: url('output-debug.ttf') format('truetype');
+        }
+
+        .font-original {
+            font-family: 'Original', sans-serif;
+        }
+
+        .font-debug {
+            font-family: 'Debug', sans-serif;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .metric {
+            font-size: 14px;
+        }
+
+        .metric-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .metric-value {
+            font-weight: 600;
+            color: #000;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .error {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #17a2b8;
+            color: #0c5460;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            font-size: 14px;
+        }
+
+        /* Layout Shift Test Styles */
+        .shift-test-container {
+            position: relative;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* Left reference line (red) */
+        .shift-test-container::before {
+            content: '';
+            position: absolute;
+            left: 30px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #ff0000;
+            opacity: 0.5;
+            z-index: 10;
+        }
+
+        /* Right reference line (green) */
+        .shift-test-container::after {
+            content: '';
+            position: absolute;
+            right: 30px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #00ff00;
+            opacity: 0.5;
+            z-index: 10;
+        }
+
+        .grid-overlay {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .grid-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #0000ff;
+            opacity: 0.2;
+        }
+
+        .side-markers {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            width: 20px;
+        }
+
+        .side-markers.left {
+            left: 5px;
+        }
+
+        .side-markers.right {
+            right: 5px;
+        }
+
+        .marker {
+            width: 100%;
+            height: 8px;
+            background: #ff6b6b;
+            border-radius: 2px;
+        }
+
+        .layout-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 15px 0;
+            padding: 10px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .layout-indicator::before {
+            content: '◆';
+            font-size: 20px;
+        }
+
+        .shift-test-text {
+            font-size: 18px;
+            line-height: 1.6;
+            color: #333;
+            transition: none;
+            position: relative;
+        }
+
+        .shift-test-text.font-original {
+            font-family: 'Original', sans-serif;
+        }
+
+        .shift-test-text.font-debug {
+            font-family: 'Debug', sans-serif;
+        }
+
+        .shift-test-text p {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Debug Font Demo</h1>
+        <p class="subtitle">Compare original and debug fonts with live variable font controls</p>
+
+        <div class="info">
+            This demo shows how the debug font preserves metrics and spacing while replacing glyphs with rectangles.
+            The rectangles stay static across all variable font axis positions to prevent skewing.
+        </div>
+
+        <div class="controls">
+            <div class="controls-grid">
+                <div class="control-group">
+                    <label for="weight">
+                        <span class="label-text">Weight (wght)</span>
+                        <span class="range-value" id="weight-value">400</span>
+                    </label>
+                    <input type="range" id="weight" min="100" max="900" value="400" step="1">
+                </div>
+
+                <div class="control-group">
+                    <label for="width">
+                        <span class="label-text">Width (wdth)</span>
+                        <span class="range-value" id="width-value">100</span>
+                    </label>
+                    <input type="range" id="width" min="62.5" max="100" value="100" step="0.5">
+                </div>
+
+                <div class="control-group">
+                    <label for="fontSize">
+                        <span class="label-text">Font Size</span>
+                        <span class="range-value" id="fontSize-value">18px</span>
+                    </label>
+                    <input type="range" id="fontSize" min="12" max="72" value="18" step="1">
+                </div>
+            </div>
+
+            <div style="margin-top: 1rem;">
+                <label for="sample" style="display: block; margin-bottom: 0.5rem;">
+                    <span class="label-text">Custom Text:</span>
+                </label>
+                <input type="text" id="sample" value="The quick brown fox jumps over the lazy dog" 
+                    style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+            </div>
+        </div>
+
+        <div class="demo-box">
+            <div class="demo-title">Side-by-Side Comparison</div>
+            <div class="comparison">
+                <div class="comparison-item">
+                    <div class="comparison-label">ORIGINAL FONT</div>
+                    <div class="text-sample font-original" id="original"></div>
+                </div>
+                <div class="comparison-item">
+                    <div class="comparison-label">DEBUG FONT</div>
+                    <div class="text-sample font-debug" id="debug"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-box">
+            <div class="demo-title">No Layout Shift Test</div>
+            <p style="margin-bottom: 1rem; font-size: 14px; color: #666;">
+                Visual indicators (red/green lines, blue grid, red markers, purple blocks) prove zero layout shift when toggling fonts.
+            </p>
+            <button onclick="toggleShiftTest()">Toggle Font</button>
+            <div style="margin-top: 1.5rem;">
+                <div class="shift-test-container" id="shiftTestContainer">
+                    <!-- Side markers -->
+                    <div class="side-markers left">
+                        <div class="marker"></div>
+                        <div class="marker"></div>
+                        <div class="marker"></div>
+                        <div class="marker"></div>
+                        <div class="marker"></div>
+                    </div>
+                    <div class="side-markers right">
+                        <div class="marker"></div>
+                        <div class="marker"></div>
+                        <div class="marker"></div>
+                        <div class="marker"></div>
+                        <div class="marker"></div>
+                    </div>
+
+                    <!-- Grid overlay -->
+                    <div class="grid-overlay" id="gridOverlay"></div>
+
+                    <!-- Top indicator -->
+                    <div class="layout-indicator">If layout shifts, this block will move</div>
+
+                    <div class="shift-test-text font-original" id="shiftTestText">
+                        <p>The quick brown fox jumps over the lazy dog. <strong>Bold text</strong> and <em>italic text</em> maintain their metrics perfectly.</p>
+                        
+                        <p>ABCDEFGHIJKLMNOPQRSTUVWXYZ</p>
+                        <p>abcdefghijklmnopqrstuvwxyz</p>
+                        <p>0123456789 !@#$%^&*()_+-=[]{}|;:',.&lt;&gt;?</p>
+                        
+                        <p>Different languages and scripts: Héllo Wörld! Ñoño café résumé.</p>
+                        
+                        <p>This demo proves that replacing glyphs with rectangles preserves all spacing, width, and metrics. Notice the reference lines and blocks never move when toggling.</p>
+                    </div>
+
+                    <!-- Bottom indicator -->
+                    <div class="layout-indicator">This block stays perfectly aligned</div>
+                </div>
+                <div class="metrics" id="shiftMetrics"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isShiftTestDebug = false;
+        const weightInput = document.getElementById('weight');
+        const widthInput = document.getElementById('width');
+        const fontSizeInput = document.getElementById('fontSize');
+        const sampleInput = document.getElementById('sample');
+        const weightValue = document.getElementById('weight-value');
+        const widthValue = document.getElementById('width-value');
+        const fontSizeValue = document.getElementById('fontSize-value');
+        const originalText = document.getElementById('original');
+        const debugText = document.getElementById('debug');
+        const shiftTestText = document.getElementById('shiftTestText');
+        const shiftTestContainer = document.getElementById('shiftTestContainer');
+        const gridOverlay = document.getElementById('gridOverlay');
+        const shiftMetricsDiv = document.getElementById('shiftMetrics');
+
+        function createGridLines() {
+            gridOverlay.innerHTML = '';
+            const containerHeight = shiftTestContainer.offsetHeight;
+            const lineSpacing = 40;
+            
+            for (let i = 0; i < containerHeight; i += lineSpacing) {
+                const line = document.createElement('div');
+                line.className = 'grid-line';
+                line.style.top = `${i}px`;
+                gridOverlay.appendChild(line);
+            }
+        }
+
+        function updateFontVariation() {
+            const weight = weightInput.value;
+            const width = widthInput.value;
+            const fontSize = fontSizeInput.value;
+            
+            weightValue.textContent = weight;
+            widthValue.textContent = width;
+            fontSizeValue.textContent = `${fontSize}px`;
+            
+            const settings = `'wght' ${weight}, 'wdth' ${width}`;
+            
+            // Update all text samples with font variation settings
+            [originalText, debugText, shiftTestText].forEach(el => {
+                if (el) {
+                    el.style.fontVariationSettings = settings;
+                }
+            });
+
+            // Update font size for all text samples
+            [originalText, debugText, shiftTestText].forEach(el => {
+                if (el) {
+                    el.style.fontSize = `${fontSize}px`;
+                }
+            });
+
+            setTimeout(() => {
+                createGridLines();
+                updateShiftMetrics();
+            }, 50);
+        }
+
+        function updateText() {
+            const text = sampleInput.value || 'The quick brown fox jumps over the lazy dog';
+            originalText.textContent = text;
+            debugText.textContent = text;
+        }
+
+        function updateShiftMetrics() {
+            const rect = shiftTestContainer.getBoundingClientRect();
+            shiftMetricsDiv.innerHTML = `
+                <div class="metric">
+                    <span class="metric-label">Width:</span>
+                    <span class="metric-value">${rect.width.toFixed(2)}px</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Height:</span>
+                    <span class="metric-value">${rect.height.toFixed(2)}px</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Font:</span>
+                    <span class="metric-value">${isShiftTestDebug ? 'Debug' : 'Original'}</span>
+                </div>
+            `;
+        }
+
+        function toggleShiftTest() {
+            isShiftTestDebug = !isShiftTestDebug;
+            shiftTestText.className = isShiftTestDebug 
+                ? 'shift-test-text font-debug' 
+                : 'shift-test-text font-original';
+            setTimeout(updateShiftMetrics, 50);
+        }
+
+        weightInput.addEventListener('input', updateFontVariation);
+        widthInput.addEventListener('input', updateFontVariation);
+        fontSizeInput.addEventListener('input', updateFontVariation);
+        sampleInput.addEventListener('input', updateText);
+
+        // Check if fonts loaded
+        document.fonts.ready.then(() => {
+            const originalLoaded = document.fonts.check('18px Original');
+            const debugLoaded = document.fonts.check('18px Debug');
+            
+            if (!originalLoaded || !debugLoaded) {
+                document.getElementById('error').style.display = 'block';
+            }
+        });
+
+        // Initialize
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                updateText();
+                updateFontVariation();
+                createGridLines();
+                updateShiftMetrics();
+            }, 100);
+        });
+
+        window.addEventListener('resize', () => {
+            createGridLines();
+            updateShiftMetrics();
+        });
+    </script>
+</body>
+</html>
+

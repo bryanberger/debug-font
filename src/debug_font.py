@@ -7,7 +7,7 @@ from fontTools.ttLib.tables.ttProgram import Program
 # ---------- CONFIG ----------
 INPUT_FONT = "input-variable.ttf"
 OUTPUT_FONT = "output-debug.ttf"
-INSET_RATIO = 0.1  # Inset as a ratio of glyph bounds (0.1 = 10% inset)
+INSET_RATIO = 0.05  # Inset as a ratio of glyph bounds (0.05 = 5% inset)
 # ----------------------------
 
 
@@ -82,11 +82,9 @@ def main():
 
     # Replace all glyphs with rectangles matching their bounds
     for glyphName in font.getGlyphOrder():
-        if glyphName == ".notdef":
-            continue  # skip .notdef itself
         
-        # Skip space characters (but replace everything else)
-        if glyphName in ('space', 'uni0020', 'u0020', 'nbsp', 'uni00A0', 'u00A0'):
+        # Skip space and .notdef characters (but replace everything else)
+        if glyphName in ('space', 'uni0020', 'u0020', 'nbsp', 'uni00A0', 'u00A0', '.notdef'):
             skipped_count += 1
             continue
 
@@ -151,7 +149,6 @@ def main():
     print(f"  • Replaced with rectangles: {replaced_count}")
     print(f"  • Skipped (spaces only): {skipped_count}")
     print(f"  • Rectangle sizing: Matches original glyph bounds with {int(INSET_RATIO*100)}% inset")
-    print(f"  • Rectangle behavior: Static (no variation across axes)")
     print(f"  • Original metrics preserved: ✓")
     print(f"  • Hinting: Stripped for consistency")
     

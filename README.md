@@ -6,6 +6,8 @@ A utility to replace all glyph outlines in a TrueType font with simple rectangle
 
 Useful for debugging font rendering, layout issues, or testing typography systems without the visual complexity of actual glyphs. Each character becomes a simple rectangle that shows its bounding box, making it easy to visualize spacing, alignment, and metrics issues.
 
+![demo](.github/demo.png?raw=true)
+
 ## Features
 
 - ✅ Replaces all glyphs with rectangles matching their original bounds
@@ -42,6 +44,17 @@ INPUT_FONT = "input-variable.ttf"  # Path to source font
 OUTPUT_FONT = "output-debug.ttf"   # Path for output
 INSET_RATIO = 0.1                  # Rectangle inset (0.1 = 10% inset from bounds)
 ```
+
+## Demo
+
+Open `demo.html` in a browser to see an interactive comparison:
+
+The demo shows:
+- Side-by-side comparison of original vs debug font
+- Variable font axis controls (weight and width sliders)
+- Overlay test to prove both fonts occupy identical space
+- Live metrics display
+- Various text samples including punctuation and symbols
 
 ## Requirements
 
