@@ -1,0 +1,27 @@
+# Python virtual environment
+bin/
+lib/
+share/
+pyvenv.cfg
+CACHEDIR.TAG
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Output files
+output-*.ttf
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+

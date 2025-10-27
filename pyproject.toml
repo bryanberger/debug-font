@@ -1,0 +1,7 @@
+[project]
+name = "debug-font"
+version = "0.1.0"
+requires-python = ">=3.9"
+dependencies = [
+    "fonttools>=4.60.1",
+]
