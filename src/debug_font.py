@@ -7,7 +7,7 @@ from fontTools.ttLib.tables.ttProgram import Program
 # ---------- CONFIG ----------
 INPUT_FONT = "input-variable.ttf"
 OUTPUT_FONT = "output-debug.ttf"
-INSET_RATIO = 0.05  # Inset as a ratio of glyph bounds (0.05 = 5% inset)
+INSET_RATIO = 0.01  # Inset as a ratio of glyph bounds (0.01 = 1% inset)
 # ----------------------------
 
 
