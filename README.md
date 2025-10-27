@@ -42,7 +42,7 @@ Edit the constants at the top of `src/debug_font.py`:
 ```python
 INPUT_FONT = "input-variable.ttf"  # Path to source font
 OUTPUT_FONT = "output-debug.ttf"   # Path for output
-INSET_RATIO = 0.1                  # Rectangle inset (0.1 = 10% inset from bounds)
+INSET_RATIO = 0.01                 # Rectangle inset from bounds
 ```
 
 ## Demo
