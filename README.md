@@ -10,14 +10,14 @@ Useful for debugging font rendering, layout issues, or testing typography system
 
 ## Features
 
-- ✅ Replaces all glyphs with rectangles matching their original bounds
-- ✅ Preserves all glyph metrics (width, left/right sidebearings)
-- ✅ Preserves OpenType features (GSUB, GPOS, ligatures, kerning)
-- ✅ Preserves variable font axes (rectangles remain static across axes)
-- ✅ Replaces all punctuation and symbols (only spaces are skipped)
-- ✅ Configurable inset ratio for rectangle sizing
-- ✅ Strips hinting for consistency
-- ✅ Maintains font validity for rendering
+- ✅ Replaces all glyphs with rectangle outlines
+- ✅ Preserves advance widths, side bearings, and kerning
+- ✅ Preserves OpenType features (GSUB ligatures, GPOS)
+- ✅ Preserves variable font axes (fvar + avar)
+- ✅ Rectangle width scales with wght axis (60% → 80% → 95%)
+- ✅ Controlled gvar deltas for smooth width variation
+- ✅ Strips hinting instructions
+- ✅ Skips .notdef and space glyphs only
 
 ## Installation
 
@@ -31,30 +31,29 @@ uv sync
 ## Usage
 
 ```bash
-# Run with uv (recommended)
-uv run python src/debug_font.py
+# Process font with default output name
+uv run python src/debug_font.py input.ttf
+
+# Specify custom output name
+uv run python src/debug_font.py input.ttf -o custom-output.ttf
+
+# Show help
+uv run python src/debug_font.py --help
 ```
 
-### Configuration
-
-Edit the constants at the top of `src/debug_font.py`:
-
-```python
-INPUT_FONT = "input-variable.ttf"  # Path to source font
-OUTPUT_FONT = "output-debug.ttf"   # Path for output
-INSET_RATIO = 0.01                 # Rectangle inset from bounds
-```
+Default output: `{input_basename}-DEBUG.ttf`
 
 ## Demo
 
-Open `demo.html` in a browser to see an interactive comparison:
+Open `demo.html` in a browser for interactive comparison:
 
-The demo shows:
-- Side-by-side comparison of original vs debug font
-- Variable font axis controls (weight and width sliders)
-- Overlay test to prove both fonts occupy identical space
+- Side-by-side font comparison with live axis controls
+- No-layout-shift test with visual alignment guides
+- Overlay mode: see debug rectangles overlaid on original text
+- Variable font controls (wght, wdth, font-size)
 - Live metrics display
-- Various text samples including punctuation and symbols
+
+Remember to update the font file imports in `demo.html` if you use non-default names.
 
 ## Requirements
 
@@ -63,19 +62,15 @@ The demo shows:
 
 ## How It Works
 
-For each glyph in the font:
-1. Gets the original glyph's bounding box (xMin, yMin, xMax, yMax)
-2. Creates a simple rectangle outline matching those bounds with a 10% inset
-3. Replaces the glyph outline with the rectangle
-4. Preserves the original glyph's horizontal metrics (width, sidebearings)
-5. Removes glyph variation data (rectangles stay static across variable font axes)
-6. Keeps all OpenType feature tables intact (GSUB, GPOS, etc.)
+For each glyph:
+1. Calculate rectangle height from original glyph bounds or 70% of typo metrics
+2. Create 4-point clockwise rectangle at 80% of advance width (default)
+3. Replace glyph outline, preserve advance width and side bearings
+4. Build new gvar deltas for width scaling:
+   - Min wght: 60% width
+   - Default: 80% width
+   - Max wght: 95% width
+5. Clear hinting instructions
+6. Keep all OpenType tables intact (GSUB, GPOS, kern, fvar, avar)
 
-The result is a font where every character displays as a rectangle showing its bounding box, but maintains proper spacing, kerning, and variable font axes.
-
-## Notes
-
-- **TrueType only**: This tool only works with TrueType fonts (glyf table). CFF/CFF2 fonts are not supported.
-- **Static rectangles**: In variable fonts, rectangles remain the same size across all axis positions to avoid visual distortion.
-- **Space characters**: Actual space glyphs are preserved (not replaced with rectangles).
-- **Empty glyphs**: Glyphs without outlines (like some punctuation) get a small default rectangle.
+Result: Rectangles show glyph metrics with proper spacing, kerning, and smooth variable width scaling.

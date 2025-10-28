@@ -4,6 +4,7 @@ lib/
 share/
 pyvenv.cfg
 CACHEDIR.TAG
+.venv/
 
 # Python cache
 __pycache__/
@@ -11,8 +12,9 @@ __pycache__/
 *$py.class
 *.so
 
-# Output files
-output-*.ttf
+# files
+dist
+*.ttf
 
 # IDE
 .vscode/
@@ -24,4 +26,3 @@ output-*.ttf
 # OS
 .DS_Store
 Thumbs.db
-

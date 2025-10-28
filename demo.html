@@ -5,6 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Debug Font Demo</title>
     <style>
+        /**********************************************************************************/
+        /* IMPORTANT: Update the font file imports to match your actual font file names */
+        @font-face {
+            font-family: 'Original';
+            src: url('input.ttf') format('truetype');
+        }
+
+        @font-face {
+            font-family: 'Debug';
+            src: url('input-DEBUG.ttf') format('truetype');
+        }
+        /**********************************************************************************/
+
         * {
             margin: 0;
             padding: 0;
@@ -92,6 +105,12 @@
             background: #0056b3;
         }
 
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
         .demo-box {
             background: white;
             padding: 2rem;
@@ -133,16 +152,6 @@
             font-weight: 600;
             color: #666;
             margin-bottom: 1rem;
-        }
-
-        @font-face {
-            font-family: 'Original';
-            src: url('input-variable.ttf') format('truetype');
-        }
-
-        @font-face {
-            font-family: 'Debug';
-            src: url('output-debug.ttf') format('truetype');
         }
 
         .font-original {
@@ -314,6 +323,106 @@
         .shift-test-text p {
             margin-bottom: 20px;
         }
+
+        /* Overlay mode styles */
+        .text-overlay-wrapper {
+            position: relative;
+        }
+
+        .overlay-base,
+        .overlay-top {
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        .overlay-base {
+            position: relative;
+            color: #333;
+        }
+
+        .overlay-base p {
+            margin-bottom: 20px;
+        }
+
+        .overlay-top {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            pointer-events: none;
+            color: rgba(255, 0, 0, 0.7);
+        }
+
+        .overlay-top p {
+            margin-bottom: 20px;
+        }
+
+        .toggle-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 26px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.3s;
+            border-radius: 26px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: #007bff;
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(24px);
+        }
+
+        .overlay-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .opacity-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .opacity-control input[type="range"] {
+            width: 150px;
+        }
     </style>
 </head>
 <body>
@@ -381,7 +490,25 @@
             <p style="margin-bottom: 1rem; font-size: 14px; color: #666;">
                 Visual indicators (red/green lines, blue grid, red markers, purple blocks) prove zero layout shift when toggling fonts.
             </p>
-            <button onclick="toggleShiftTest()">Toggle Font</button>
+            
+            <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                <button id="toggleFontBtn" onclick="toggleShiftTest()">Toggle Font</button>
+                
+                <div class="toggle-group">
+                    <span class="overlay-label">Overlay Mode:</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="overlayToggle" onchange="toggleOverlay()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="opacity-control" id="opacityControl" style="display: none;">
+                    <span class="overlay-label">Opacity:</span>
+                    <input type="range" id="overlayOpacity" min="0" max="100" value="50" step="5" oninput="updateOverlayOpacity()">
+                    <span class="range-value" id="opacity-value">50%</span>
+                </div>
+            </div>
+            
             <div style="margin-top: 1.5rem;">
                 <div class="shift-test-container" id="shiftTestContainer">
                     <!-- Side markers -->
@@ -406,16 +533,33 @@
                     <!-- Top indicator -->
                     <div class="layout-indicator">If layout shifts, this block will move</div>
 
-                    <div class="shift-test-text font-original" id="shiftTestText">
-                        <p>The quick brown fox jumps over the lazy dog. <strong>Bold text</strong> and <em>italic text</em> maintain their metrics perfectly.</p>
-                        
-                        <p>ABCDEFGHIJKLMNOPQRSTUVWXYZ</p>
-                        <p>abcdefghijklmnopqrstuvwxyz</p>
-                        <p>0123456789 !@#$%^&*()_+-=[]{}|;:',.&lt;&gt;?</p>
-                        
-                        <p>Different languages and scripts: Héllo Wörld! Ñoño café résumé.</p>
-                        
-                        <p>This demo proves that replacing glyphs with rectangles preserves all spacing, width, and metrics. Notice the reference lines and blocks never move when toggling.</p>
+                    <!-- Text overlay wrapper -->
+                    <div class="text-overlay-wrapper" style="position: relative;">
+                        <!-- Base text (original font) -->
+                        <div class="overlay-base font-original" id="shiftTestBase">
+                            <p>The quick brown fox jumps over the lazy dog. <strong>Bold text</strong> and <em>italic text</em> maintain their metrics perfectly.</p>
+                            
+                            <p>ABCDEFGHIJKLMNOPQRSTUVWXYZ</p>
+                            <p>abcdefghijklmnopqrstuvwxyz</p>
+                            <p>0123456789 !@#$%^&*()_+-=[]{}|;:',.&lt;&gt;?</p>
+                            
+                            <p>Different languages and scripts: Héllo Wörld! Ñoño café résumé.</p>
+                            
+                            <p>This demo proves that replacing glyphs with rectangles preserves all spacing, width, and metrics. Notice the reference lines and blocks never move when toggling.</p>
+                        </div>
+
+                        <!-- Overlay text (debug font) -->
+                        <div class="overlay-top font-debug" id="shiftTestOverlay" style="display: none;">
+                            <p>The quick brown fox jumps over the lazy dog. <strong>Bold text</strong> and <em>italic text</em> maintain their metrics perfectly.</p>
+                            
+                            <p>ABCDEFGHIJKLMNOPQRSTUVWXYZ</p>
+                            <p>abcdefghijklmnopqrstuvwxyz</p>
+                            <p>0123456789 !@#$%^&*()_+-=[]{}|;:',.&lt;&gt;?</p>
+                            
+                            <p>Different languages and scripts: Héllo Wörld! Ñoño café résumé.</p>
+                            
+                            <p>This demo proves that replacing glyphs with rectangles preserves all spacing, width, and metrics. Notice the reference lines and blocks never move when toggling.</p>
+                        </div>
                     </div>
 
                     <!-- Bottom indicator -->
@@ -428,6 +572,7 @@
 
     <script>
         let isShiftTestDebug = false;
+        let isOverlayMode = false;
         const weightInput = document.getElementById('weight');
         const widthInput = document.getElementById('width');
         const fontSizeInput = document.getElementById('fontSize');
@@ -437,8 +582,14 @@
         const fontSizeValue = document.getElementById('fontSize-value');
         const originalText = document.getElementById('original');
         const debugText = document.getElementById('debug');
-        const shiftTestText = document.getElementById('shiftTestText');
         const shiftTestContainer = document.getElementById('shiftTestContainer');
+        const shiftTestBase = document.getElementById('shiftTestBase');
+        const shiftTestOverlay = document.getElementById('shiftTestOverlay');
+        const toggleFontBtn = document.getElementById('toggleFontBtn');
+        const overlayToggle = document.getElementById('overlayToggle');
+        const opacityControl = document.getElementById('opacityControl');
+        const overlayOpacityInput = document.getElementById('overlayOpacity');
+        const opacityValue = document.getElementById('opacity-value');
         const gridOverlay = document.getElementById('gridOverlay');
         const shiftMetricsDiv = document.getElementById('shiftMetrics');
 
@@ -467,14 +618,14 @@
             const settings = `'wght' ${weight}, 'wdth' ${width}`;
             
             // Update all text samples with font variation settings
-            [originalText, debugText, shiftTestText].forEach(el => {
+            [originalText, debugText, shiftTestBase, shiftTestOverlay].forEach(el => {
                 if (el) {
                     el.style.fontVariationSettings = settings;
                 }
             });
 
             // Update font size for all text samples
-            [originalText, debugText, shiftTestText].forEach(el => {
+            [originalText, debugText, shiftTestBase, shiftTestOverlay].forEach(el => {
                 if (el) {
                     el.style.fontSize = `${fontSize}px`;
                 }
@@ -494,6 +645,13 @@
 
         function updateShiftMetrics() {
             const rect = shiftTestContainer.getBoundingClientRect();
+            let fontMode = 'Original';
+            if (isOverlayMode) {
+                fontMode = 'Overlay (Original + Debug)';
+            } else if (isShiftTestDebug) {
+                fontMode = 'Debug';
+            }
+            
             shiftMetricsDiv.innerHTML = `
                 <div class="metric">
                     <span class="metric-label">Width:</span>
@@ -504,18 +662,60 @@
                     <span class="metric-value">${rect.height.toFixed(2)}px</span>
                 </div>
                 <div class="metric">
-                    <span class="metric-label">Font:</span>
-                    <span class="metric-value">${isShiftTestDebug ? 'Debug' : 'Original'}</span>
+                    <span class="metric-label">Mode:</span>
+                    <span class="metric-value">${fontMode}</span>
                 </div>
             `;
         }
 
         function toggleShiftTest() {
+            if (isOverlayMode) return; // Disable toggle when in overlay mode
+            
             isShiftTestDebug = !isShiftTestDebug;
-            shiftTestText.className = isShiftTestDebug 
-                ? 'shift-test-text font-debug' 
-                : 'shift-test-text font-original';
+            
+            if (isShiftTestDebug) {
+                shiftTestBase.className = 'overlay-base font-debug';
+            } else {
+                shiftTestBase.className = 'overlay-base font-original';
+            }
+            
             setTimeout(updateShiftMetrics, 50);
+        }
+
+        function toggleOverlay() {
+            isOverlayMode = overlayToggle.checked;
+            
+            if (isOverlayMode) {
+                // Enable overlay mode
+                shiftTestBase.className = 'overlay-base font-original';
+                shiftTestOverlay.style.display = 'block';
+                opacityControl.style.display = 'flex';
+                toggleFontBtn.disabled = true;
+                updateOverlayOpacity();
+            } else {
+                // Disable overlay mode
+                shiftTestOverlay.style.display = 'none';
+                opacityControl.style.display = 'none';
+                toggleFontBtn.disabled = false;
+                
+                // Restore previous state
+                if (isShiftTestDebug) {
+                    shiftTestBase.className = 'overlay-base font-debug';
+                } else {
+                    shiftTestBase.className = 'overlay-base font-original';
+                }
+            }
+            
+            setTimeout(() => {
+                createGridLines();
+                updateShiftMetrics();
+            }, 50);
+        }
+
+        function updateOverlayOpacity() {
+            const opacity = overlayOpacityInput.value / 100;
+            shiftTestOverlay.style.opacity = opacity;
+            opacityValue.textContent = `${overlayOpacityInput.value}%`;
         }
 
         weightInput.addEventListener('input', updateFontVariation);
@@ -529,7 +729,12 @@
             const debugLoaded = document.fonts.check('18px Debug');
             
             if (!originalLoaded || !debugLoaded) {
-                document.getElementById('error').style.display = 'block';
+                const errorEl = document.getElementById('error');
+                if (errorEl) {
+                    errorEl.style.display = 'block';
+                } else {
+                    console.warn('Fonts may not have loaded properly:', {originalLoaded, debugLoaded});
+                }
             }
         });
 
